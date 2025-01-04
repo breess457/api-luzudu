@@ -5,12 +5,14 @@ import { CreateUserDto, LoginUserDto, Payload } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Signup } from './schema/signup.schema';
 import * as bcrypt from 'bcrypt'
+import { ProfileImage } from './schema/profile-image.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(Signup.name)
-    private signupModal:Model<Signup>
+    private signupModal:Model<Signup>,
+    @InjectModel(ProfileImage.name) private profileImageModel:Model<ProfileImage>
   ){}
   async signup(createUserDto: CreateUserDto):Promise<Signup | null>{
     const checkUser = await this.signupModal.findOne({email:createUserDto.email})
@@ -38,6 +40,20 @@ export class UsersService {
 
   async findByUser(payload:Payload):Promise<Signup>{
     return await this.signupModal.findById(payload.id).select('-password').exec()
+  }
+
+  async saveImageData(file:Express.Multer.File,payload:Payload):Promise<ProfileImage | null>{
+      const newImage = new this.profileImageModel({
+        userProfileId:payload.id,
+        filename:file.filename,
+        path:file.path,
+        mimetype:file.mimetype
+      })
+      return await newImage.save()
+  }
+
+  async editByAccount(){
+
   }
 
   findAll() {

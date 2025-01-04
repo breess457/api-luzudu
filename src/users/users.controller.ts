@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtService } from '@nestjs/jwt';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';;
 import { Response } from 'express';
 import {config} from 'dotenv'
 import { JwtAuthGuard } from './AuthGuard/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {diskStorage} from "multer";
+import File from "multer"
+import { extname } from 'path';
 config()
 
 
@@ -102,6 +105,44 @@ export class UsersController {
         }else{
            console.log("none profile")
         }
+  };
+  
+
+  @Post('uploadprofileimage')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file',{
+      storage:diskStorage({
+        destination:"./upload/profile",
+        filename:(req, file,callback)=>{
+          const uniqueSuffix = Date.now()+ '-' + Math.round(Math.random()* 1e9);
+          const ext = extname(file.originalname);
+          const filename = `${file.filename}-${uniqueSuffix}${ext}`;
+          callback(null,filename)
+        }
+      }),
+      fileFilter:(req, file,callback)=>{
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+          return callback(new Error(`Only image files are allowed!`),false)
+        }
+        callback(null,true)
+      }
+    })
+  )
+  async uploadImageProfile(@UploadedFile() file:Express.Multer.File,@Req() req){
+    console.log("files : ",file)
+    const savedImage = await this.usersService.saveImageData(file,req.user)
+    return {
+      message:"File Upload Successfully",
+      image:savedImage
+    }
+  }
+
+  @Get('test')
+  @UseGuards(JwtAuthGuard)
+  test(@Req() req){
+      console.log(req.user)
+      return req.user
   }
 
   @Get(':id')
