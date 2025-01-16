@@ -45,6 +45,11 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## database
+$ use mongo shell
+$ databasename  : luzudu
+
+
 ## Run tests
 
 ```bash
