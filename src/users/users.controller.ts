@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
+import { CreateUserAccount, CreateUserDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';;
 import { Response } from 'express';
@@ -8,7 +8,6 @@ import {config} from 'dotenv'
 import { JwtAuthGuard } from './AuthGuard/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {diskStorage} from "multer";
-import File from "multer"
 import { extname } from 'path';
 config()
 
@@ -93,22 +92,21 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req) {
-    console.log("profile")
         const getProfile = await this.usersService.findByUser(req.user);
+        const getAccount = await this.usersService.findByAccount(req.user)
+        const getImage = await this.usersService.findImageAccount(req.user)
         if(getProfile){
-         console.log("1 : ",getProfile)
           return {
             statusCode: 200,
             message: 'Profile retrieved successfully',
-            data: getProfile
+            data: {Profile:getProfile,Account:getAccount,Photo:getImage}
           }
         }else{
            console.log("none profile")
         }
   };
   
-
-  @Post('uploadprofileimage')
+  @Post('manage-account')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file',{
@@ -117,7 +115,7 @@ export class UsersController {
         filename:(req, file,callback)=>{
           const uniqueSuffix = Date.now()+ '-' + Math.round(Math.random()* 1e9);
           const ext = extname(file.originalname);
-          const filename = `${file.filename}-${uniqueSuffix}${ext}`;
+          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
           callback(null,filename)
         }
       }),
@@ -129,20 +127,16 @@ export class UsersController {
       }
     })
   )
-  async uploadImageProfile(@UploadedFile() file:Express.Multer.File,@Req() req){
-    console.log("files : ",file)
-    const savedImage = await this.usersService.saveImageData(file,req.user)
+  async uploadImageProfile(@UploadedFile() file:Express.Multer.File, @Body() createUserAccountDto:CreateUserAccount , @Req() req){
+      console.log("manage-account")
+      const savedImage = await this.usersService.saveImageData(file,req.user)
+      const saveAccountData = await this.usersService.editByAccount(req.user,createUserAccountDto)
     return {
+      statusCode:201,
       message:"File Upload Successfully",
+      accountData:saveAccountData,
       image:savedImage
     }
-  }
-
-  @Get('test')
-  @UseGuards(JwtAuthGuard)
-  test(@Req() req){
-      console.log(req.user)
-      return req.user
   }
 
   @Get(':id')

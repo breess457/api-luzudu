@@ -6,20 +6,28 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import {ServeStaticModule} from "@nestjs/serve-static"
 import { join } from 'path';
+import { MarketsModule } from './markets/markets.module';
+import { JwtModule } from '@nestjs/jwt';
+import { config } from 'dotenv';
+config()
 
 @Module({
   imports: [
-  
+    JwtModule.register({
+      secret:process.env.JWT_SECRET,
+      signOptions:{expiresIn:'1d'}
+    }),
     ConfigModule.forRoot({
         isGlobal:true,
         envFilePath:'.env'
     }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     ServeStaticModule.forRoot({
-      rootPath:join(__dirname,'..','uploads'),
-      serveRoot:'/uploads'
+      rootPath:join(__dirname,'..','upload'),
+      serveRoot:'/upload'
     }),
-    UsersModule
+    UsersModule,
+    MarketsModule
   ],
   controllers: [AppController],
   providers: [AppService,ConfigService],

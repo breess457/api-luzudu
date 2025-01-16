@@ -3,11 +3,12 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SignupSchema } from './schema/signup.schema';
-import { JwtModule } from '@nestjs/jwt';
-import { config } from 'dotenv';
+
 import { PassportModule } from '@nestjs/passport';
 import { JwtStragy } from './AuthGuard/jwt.strategy';
-import { ImaheProfileSchema } from './schema/profile-image.schema';
+import { ImaheProfileSchema,AccountProfileSchema } from './schema/account.schema';
+import { JwtModule } from '@nestjs/jwt';
+import { config } from 'dotenv';
 config()
 
 @Module({
@@ -18,7 +19,8 @@ config()
     }),
     MongooseModule.forFeature([
       {name:'Signup', schema:SignupSchema},
-      {name:'ProfileImage',schema:ImaheProfileSchema}
+      {name:'ProfileImage',schema:ImaheProfileSchema},
+      {name:'ProfileAccount',schema:AccountProfileSchema}
     ]),
     PassportModule
   ],

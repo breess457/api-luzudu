@@ -23,6 +23,22 @@ class LoginUserDto {
     readonly password:string;
 }
 
+class CreateUserAccount{
+    @IsNotEmpty()
+    readonly firstname:string;
+
+    @IsNotEmpty()
+    readonly lastname:string;
+    
+    readonly gender:string;
+
+    readonly day:number;
+
+    readonly month:string;
+
+    readonly year:number;
+}
+
 class Payload {
     @IsNotEmpty()
     readonly id:string;
@@ -34,4 +50,4 @@ class Payload {
     readonly firstname:string;
 }
 
-export {CreateUserDto,LoginUserDto,Payload}
+export {CreateUserDto,LoginUserDto,Payload,CreateUserAccount}
