@@ -18,7 +18,7 @@ export class MarketsService {
   ){}
 
   async createSupperMarket(payload:Payload,createMarketDto: CreateMarketDto):Promise<{}> {
-    console.log({payload,createMarketDto})
+    console.log("ft")
     try{
       const findAccountMarket = await this.supperMarketModel.findOne({userProfileId:payload.id}).exec()
 
@@ -50,37 +50,36 @@ export class MarketsService {
     }
   }
 
-  async findAll(payload:Payload):Promise<SupperMarket | []> {
+  async findAll(payload:Payload):Promise<SupperMarket> {
     const result = await this.supperMarketModel.findOne({userProfileId:payload.id}).exec()
-      if(result){
-        return result
-      }
-    return []
+    return result
   }
 
-  async uploadImageSuperMarket(payload:Payload,files:any,datatrast:[]){
+  async uploadImageSuperMarket(payload:Payload,files:any,datatrast:any):Promise<PhotoSupperMarket | {}>{
       const existingRecord = await this.photoSupperMarketModel.findOne({userProfileId:payload.id})
-      console.log("m:",datatrast.length)
-      console.log("s:",datatrast)
-        if(datatrast.length > 0){
-            datatrast.forEach(async(imageMarket:any)=>{
-              const  fullPath = path.join(__dirname,'../upload/photomarket', path.basename(imageMarket))
-              console.log({imageMarket})
+      if(!files.marketimages && !datatrast?.datawilltrash){
+        console.log("not delete")
+        return {statusCode:300,message:"not delete not update"}
+      }
+        if(datatrast?.datawilltrash && datatrast?.datawilltrash.length > 0){
+            datatrast?.datawilltrash.forEach(async(imageMarket:any)=>{
+              const  fullPath = path.join(__dirname,'../../upload/photomarket/', path.basename(imageMarket))
               try{
                 const trashData = await this.photoSupperMarketModel.updateOne(
                   {userProfileId:payload.id},
                   {$pull:{picMarket:{filename:imageMarket}}}
                 )
-                console.log(trashData)
                 if(trashData){
-                  console.log("success s")
                   fs.unlinkSync(fullPath)
                 }
-
               }catch(e){
                 console.error(`Failed to delete image : ${fullPath}`, e)
               }
             })
+            if(!files.marketimages){
+              console.log("toast")
+              return {statusCode:201,message:"delete image success"}
+            }
         }
         if(files.marketimages){
             const newImageDocs:any = files.marketimages.map((file:any)=>({
@@ -91,13 +90,14 @@ export class MarketsService {
           
             if(existingRecord){
                 existingRecord.picMarket.push(...newImageDocs)
-                return [201,"update upload imgage success",existingRecord.save()]
+                return {statusCode:201,message:"update upload imgage success", data:existingRecord.save()}
             }
           
             const uploadMarket = new this.photoSupperMarketModel({
               userProfileId:payload.id,picMarket:newImageDocs
             })
-          return [201,"update image success",uploadMarket.save()]
+            
+            return {statusCode:201,message:"update image success", data:uploadMarket.save()}
         }
   }
 

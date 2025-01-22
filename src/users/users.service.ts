@@ -101,7 +101,7 @@ export class UsersService {
   }
 
   async editByAccount(payload:Payload,accountData:CreateUserAccount):Promise<{}>{
-    
+    console.log("[] : ",accountData)
     const findAccoutn = await this.profileAccountModel.findOne({userProfileId:payload.id}).exec()
     const editFullName = await this.signupModal.findByIdAndUpdate(
       payload.id,

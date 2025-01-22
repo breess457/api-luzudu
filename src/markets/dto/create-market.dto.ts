@@ -8,7 +8,7 @@ export class LocationMarketDto {
   
     readonly province: string;
   
-    readonly zipcode: number;
+    readonly zipcode: string;
   }
 
 class CreateMarketDto {

@@ -47,6 +47,7 @@ export class MarketsController {
     })
   )
   async uploadImageMarket(@Req() req, @Body() datatrast:[],@UploadedFiles() files:Array<Express.Multer.File> ){
+      console.log(datatrast)
       const IsUploadPicMarket = await this.marketsService.uploadImageSuperMarket(req.user, files, datatrast)
       return IsUploadPicMarket
   }
